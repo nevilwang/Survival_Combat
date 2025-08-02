@@ -62,6 +62,11 @@ const Game: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const handleJoystickMove = useCallback((direction: { x: number; y: number }) => {
+    console.log('摇杆移动:', direction); // 调试信息
+    setJoystickDirection(direction);
+  }, []);
+
   // Initialize game
   const initializeGame = useCallback(() => {
     const players: Player[] = [];
@@ -254,11 +259,15 @@ const Game: React.FC = () => {
     let moveX = 0;
     let moveY = 0;
     
+    console.log('当前摇杆方向:', joystickDirection); // 调试信息
+    
     // Handle joystick input first (has priority)
     if (Math.abs(joystickDirection.x) > 0.1 || Math.abs(joystickDirection.y) > 0.1) {
+      console.log('使用摇杆控制'); // 调试信息
       moveX = joystickDirection.x * player.speed;
       moveY = joystickDirection.y * player.speed;
     } else {
+      console.log('使用键盘控制'); // 调试信息
       // Use keyboard input when joystick is not active
       if (keys.w) moveY -= player.speed;
       if (keys.s) moveY += player.speed;
@@ -770,7 +779,7 @@ const Game: React.FC = () => {
         {/* Virtual Joystick */}
         <div className="flex justify-center mt-4">
           <VirtualJoystick 
-            onMove={setJoystickDirection}
+            onMove={handleJoystickMove}
             size={120}
           />
         </div>
