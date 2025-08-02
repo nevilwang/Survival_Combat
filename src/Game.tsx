@@ -705,7 +705,13 @@ const Game: React.FC = () => {
             ref={canvasRef}
             width={CANVAS_WIDTH}
             height={CANVAS_HEIGHT}
-            className="border-2 border-gray-600 rounded"
+            className={`border-2 border-gray-600 rounded ${isMobile ? 'max-w-full h-auto' : ''}`}
+            style={isMobile ? { 
+              width: '100%', 
+              height: 'auto',
+              maxWidth: '100vw',
+              maxHeight: '60vh'
+            } : {}}
           />
           
           {(gameStatus === 'won' || gameStatus === 'lost') && (
