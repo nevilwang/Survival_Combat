@@ -65,7 +65,7 @@ const Game: React.FC = () => {
   const handleJoystickMove = useCallback((direction: { x: number; y: number }) => {
     console.log('摇杆移动:', direction); // 调试信息
     setJoystickDirection(direction);
-  }, []);
+  }, [setJoystickDirection]);
 
   // Initialize game
   const initializeGame = useCallback(() => {
@@ -244,7 +244,7 @@ const Game: React.FC = () => {
   }, []);
 
   // Game update logic
-  const updateGame = useCallback(() => {
+  const updateGame = useCallback((currentJoystickDirection: { x: number; y: number }) => {
     const gameState = gameStateRef.current;
     if (gameState.gameStatus !== 'playing' || gameState.isPaused) return;
 
@@ -259,13 +259,13 @@ const Game: React.FC = () => {
     let moveX = 0;
     let moveY = 0;
     
-    console.log('当前摇杆方向:', joystickDirection, '阈值检查:', Math.abs(joystickDirection.x) > 0.1 || Math.abs(joystickDirection.y) > 0.1); // 调试信息
+    console.log('当前摇杆方向:', currentJoystickDirection, '阈值检查:', Math.abs(currentJoystickDirection.x) > 0.1 || Math.abs(currentJoystickDirection.y) > 0.1); // 调试信息
     
     // Handle joystick input first (has priority)
-    if (Math.abs(joystickDirection.x) > 0.1 || Math.abs(joystickDirection.y) > 0.1) {
+    if (Math.abs(currentJoystickDirection.x) > 0.1 || Math.abs(currentJoystickDirection.y) > 0.1) {
       console.log('使用摇杆控制'); // 调试信息
-      moveX = joystickDirection.x * player.speed;
-      moveY = joystickDirection.y * player.speed;
+      moveX = currentJoystickDirection.x * player.speed;
+      moveY = currentJoystickDirection.y * player.speed;
       console.log('摇杆移动量:', { moveX, moveY }); // 调试信息
     } else {
       console.log('使用键盘控制'); // 调试信息
@@ -442,7 +442,7 @@ const Game: React.FC = () => {
     if (player) {
       setPlayerHealth(player.health);
     }
-
+  }, []);
     // Check win condition
     const aliveEnemies = gameState.players.filter(p => !p.isPlayer);
     if (aliveEnemies.length === 0) {
@@ -640,10 +640,10 @@ const Game: React.FC = () => {
 
   // Game loop
   const gameLoop = useCallback(() => {
-    updateGame();
+    updateGame(joystickDirection);
     render();
     animationIdRef.current = requestAnimationFrame(gameLoop);
-  }, [updateGame, render]);
+  }, [updateGame, render, joystickDirection]);
 
   // Keyboard event handlers
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
