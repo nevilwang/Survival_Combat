@@ -259,13 +259,14 @@ const Game: React.FC = () => {
     let moveX = 0;
     let moveY = 0;
     
-    console.log('当前摇杆方向:', joystickDirection); // 调试信息
+    console.log('当前摇杆方向:', joystickDirection, '阈值检查:', Math.abs(joystickDirection.x) > 0.1 || Math.abs(joystickDirection.y) > 0.1); // 调试信息
     
     // Handle joystick input first (has priority)
     if (Math.abs(joystickDirection.x) > 0.1 || Math.abs(joystickDirection.y) > 0.1) {
       console.log('使用摇杆控制'); // 调试信息
       moveX = joystickDirection.x * player.speed;
       moveY = joystickDirection.y * player.speed;
+      console.log('摇杆移动量:', { moveX, moveY }); // 调试信息
     } else {
       console.log('使用键盘控制'); // 调试信息
       // Use keyboard input when joystick is not active
@@ -275,9 +276,16 @@ const Game: React.FC = () => {
       if (keys.d) moveX += player.speed;
     }
     
+    console.log('最终移动量:', { moveX, moveY }, '玩家当前位置:', player.position); // 调试信息
+    
     // Apply movement
-    player.position.x = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, player.position.x + moveX));
-    player.position.y = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, player.position.y + moveY));
+    const newX = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, player.position.x + moveX));
+    const newY = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, player.position.y + moveY));
+    
+    console.log('新位置:', { newX, newY }); // 调试信息
+    
+    player.position.x = newX;
+    player.position.y = newY;
 
     // Update camera to follow player
     const targetCameraX = player.position.x - CANVAS_WIDTH / 2;
