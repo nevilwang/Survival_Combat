@@ -254,16 +254,17 @@ const Game: React.FC = () => {
     let moveX = 0;
     let moveY = 0;
     
-    if (keys.w) moveY -= player.speed;
-    if (keys.s) moveY += player.speed;
-    if (keys.a) moveX -= player.speed;
-    if (keys.d) moveX += player.speed;
-    
     // Handle joystick input (overrides keyboard if active)
     const joystick = joystickDirection;
     if (Math.abs(joystick.x) > 0.1 || Math.abs(joystick.y) > 0.1) {
       moveX = joystick.x * player.speed;
       moveY = joystick.y * player.speed;
+    } else {
+      // Use keyboard input only when joystick is not active
+      if (keys.w) moveY -= player.speed;
+      if (keys.s) moveY += player.speed;
+      if (keys.a) moveX -= player.speed;
+      if (keys.d) moveX += player.speed;
     }
     
     // Apply movement
