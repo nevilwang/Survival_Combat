@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Player, Position, GameState, Keys, Weapon, ExperienceOrb } from './types';
 import { Play, Pause, RotateCcw } from 'lucide-react';
+import VirtualJoystick from './components/VirtualJoystick';
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
@@ -45,6 +46,7 @@ const Game: React.FC = () => {
   const [playerExp, setPlayerExp] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [joystickDirection, setJoystickDirection] = useState({ x: 0, y: 0 });
 
   // Detect mobile device
   useEffect(() => {
@@ -247,10 +249,26 @@ const Game: React.FC = () => {
 
     // Update player position based on keys
     const keys = keysRef.current;
-    if (keys.w) player.position.y = Math.max(player.radius, player.position.y - player.speed);
-    if (keys.s) player.position.y = Math.min(WORLD_HEIGHT - player.radius, player.position.y + player.speed);
-    if (keys.a) player.position.x = Math.max(player.radius, player.position.x - player.speed);
-    if (keys.d) player.position.x = Math.min(WORLD_WIDTH - player.radius, player.position.x + player.speed);
+    
+    // Handle keyboard input
+    let moveX = 0;
+    let moveY = 0;
+    
+    if (keys.w) moveY -= player.speed;
+    if (keys.s) moveY += player.speed;
+    if (keys.a) moveX -= player.speed;
+    if (keys.d) moveX += player.speed;
+    
+    // Handle joystick input (overrides keyboard if active)
+    const joystick = joystickDirection;
+    if (Math.abs(joystick.x) > 0.1 || Math.abs(joystick.y) > 0.1) {
+      moveX = joystick.x * player.speed;
+      moveY = joystick.y * player.speed;
+    }
+    
+    // Apply movement
+    player.position.x = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, player.position.x + moveX));
+    player.position.y = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, player.position.y + moveY));
 
     // Update camera to follow player
     const targetCameraX = player.position.x - CANVAS_WIDTH / 2;
@@ -749,8 +767,16 @@ const Game: React.FC = () => {
           )}
         </div>
         
+        {/* Virtual Joystick */}
+        <div className="flex justify-center mt-4">
+          <VirtualJoystick 
+            onMove={setJoystickDirection}
+            size={120}
+          />
+        </div>
+        
         <div className="mt-4 text-sm text-gray-400 text-center space-y-1">
-          <p>使用 WASD 或方向键移动 • 收集绿色经验点升级</p>
+          <p>使用 WASD/方向键/摇杆移动 • 收集绿色经验点升级</p>
           <p>红色十字回血道具 • 每10经验升级 • 武器进化: 水果刀→匕首→剑→红缨枪→斧头→大刀→激光剑</p>
           <p>空格键暂停/继续 • 击败所有20个敌人获胜！</p>
         </div>

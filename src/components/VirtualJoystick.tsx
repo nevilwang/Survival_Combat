@@ -130,7 +130,7 @@ const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ onMove, size = 120 })
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-6 left-6 select-none touch-none z-50"
+      className="relative select-none touch-none"
       style={{
         width: size,
         height: size,
