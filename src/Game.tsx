@@ -438,13 +438,14 @@ const Game: React.FC = () => {
     if (player) {
       setPlayerHealth(player.health);
     }
-  }, []);
+
     // Check win condition
     const aliveEnemies = gameState.players.filter(p => !p.isPlayer);
     if (aliveEnemies.length === 0) {
       gameState.gameStatus = 'won';
       setGameStatus('won');
     }
+  }, []);
 
   // Render game
   const render = useCallback(() => {
