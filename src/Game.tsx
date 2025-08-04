@@ -109,8 +109,8 @@ const Game: React.FC = () => {
       let attempts = 0;
       do {
         position = {
-          x: Math.random() * (CANVAS_WIDTH - 100) + 50,
-          y: Math.random() * (CANVAS_HEIGHT - 100) + 50
+          x: Math.random() * (WORLD_WIDTH - 100) + 50,
+          y: Math.random() * (WORLD_HEIGHT - 100) + 50
         };
         attempts++;
       } while (attempts < 50 && getDistance(position, player.position) < 100);
@@ -445,7 +445,6 @@ const Game: React.FC = () => {
       gameState.gameStatus = 'won';
       setGameStatus('won');
     }
-  }, []);
 
   // Render game
   const render = useCallback(() => {
@@ -618,9 +617,6 @@ const Game: React.FC = () => {
 
     // Draw pause overlay
     if (gameState.isPaused) {
-      // Restore context before drawing UI
-      ctx.restore();
-      
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       
@@ -628,9 +624,6 @@ const Game: React.FC = () => {
       ctx.font = 'bold 48px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('暂停', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-    } else {
-      // Restore context at the end if not paused
-      ctx.restore();
     }
   }, []);
 
