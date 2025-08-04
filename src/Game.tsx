@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Player, Position, GameState, Keys, Weapon, ExperienceOrb } from './types';
 import { Play, Pause, RotateCcw } from 'lucide-react';
-import VirtualJoystick from './components/VirtualJoystick';
+import VirtualButtons from './components/VirtualButtons';
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
@@ -46,7 +46,6 @@ const Game: React.FC = () => {
   const [playerExp, setPlayerExp] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [joystickDirection, setJoystickDirection] = useState({ x: 0, y: 0 });
 
   // Detect mobile device
   useEffect(() => {
@@ -62,10 +61,23 @@ const Game: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleJoystickMove = useCallback((direction: { x: number; y: number }) => {
-    console.log('摇杆移动:', direction); // 调试信息
-    setJoystickDirection(direction);
-  }, [setJoystickDirection]);
+  // Handle virtual button press
+  const handleDirectionPress = useCallback((direction: 'up' | 'down' | 'left' | 'right', pressed: boolean) => {
+    switch (direction) {
+      case 'up':
+        keysRef.current.w = pressed;
+        break;
+      case 'down':
+        keysRef.current.s = pressed;
+        break;
+      case 'left':
+        keysRef.current.a = pressed;
+        break;
+      case 'right':
+        keysRef.current.d = pressed;
+        break;
+    }
+  }, []);
 
   // Initialize game
   const initializeGame = useCallback(() => {
@@ -244,7 +256,7 @@ const Game: React.FC = () => {
   }, []);
 
   // Game update logic
-  const updateGame = useCallback((currentJoystickDirection: { x: number; y: number }) => {
+  const updateGame = useCallback(() => {
     const gameState = gameStateRef.current;
     if (gameState.gameStatus !== 'playing' || gameState.isPaused) return;
 
@@ -258,32 +270,16 @@ const Game: React.FC = () => {
     // Handle keyboard input
     let moveX = 0;
     let moveY = 0;
-    
-    console.log('当前摇杆方向:', currentJoystickDirection, '阈值检查:', Math.abs(currentJoystickDirection.x) > 0.1 || Math.abs(currentJoystickDirection.y) > 0.1); // 调试信息
-    
-    // Handle joystick input first (has priority)
-    if (Math.abs(currentJoystickDirection.x) > 0.1 || Math.abs(currentJoystickDirection.y) > 0.1) {
-      console.log('使用摇杆控制'); // 调试信息
-      moveX = currentJoystickDirection.x * player.speed;
-      moveY = currentJoystickDirection.y * player.speed;
-      console.log('摇杆移动量:', { moveX, moveY }); // 调试信息
-    } else {
-      console.log('使用键盘控制'); // 调试信息
-      // Use keyboard input when joystick is not active
-      if (keys.w) moveY -= player.speed;
-      if (keys.s) moveY += player.speed;
-      if (keys.a) moveX -= player.speed;
-      if (keys.d) moveX += player.speed;
-    }
-    
-    console.log('最终移动量:', { moveX, moveY }, '玩家当前位置:', player.position); // 调试信息
+
+    if (keys.w) moveY -= player.speed;
+    if (keys.s) moveY += player.speed;
+    if (keys.a) moveX -= player.speed;
+    if (keys.d) moveX += player.speed;
     
     // Apply movement
     const newX = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, player.position.x + moveX));
     const newY = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, player.position.y + moveY));
-    
-    console.log('新位置:', { newX, newY }); // 调试信息
-    
+
     player.position.x = newX;
     player.position.y = newY;
 
@@ -640,10 +636,10 @@ const Game: React.FC = () => {
 
   // Game loop
   const gameLoop = useCallback(() => {
-    updateGame(joystickDirection);
+    updateGame();
     render();
     animationIdRef.current = requestAnimationFrame(gameLoop);
-  }, [updateGame, render, joystickDirection]);
+  }, [updateGame, render]);
 
   // Keyboard event handlers
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
@@ -784,16 +780,15 @@ const Game: React.FC = () => {
           )}
         </div>
         
-        {/* Virtual Joystick */}
-        <div className="flex justify-center mt-4">
-          <VirtualJoystick 
-            onMove={handleJoystickMove}
-            size={120}
-          />
-        </div>
+        {/* Virtual Buttons for mobile */}
+        {isMobile && (
+          <div className="flex justify-center mt-4">
+            <VirtualButtons onDirectionPress={handleDirectionPress} />
+          </div>
+        )}
         
         <div className="mt-4 text-sm text-gray-400 text-center space-y-1">
-          <p>使用 WASD/方向键/摇杆移动 • 收集绿色经验点升级</p>
+          <p>使用 WASD/方向键{isMobile ? '/虚拟按键' : ''}移动 • 收集绿色经验点升级</p>
           <p>红色十字回血道具 • 每10经验升级 • 武器进化: 水果刀→匕首→剑→红缨枪→斧头→大刀→激光剑</p>
           <p>空格键暂停/继续 • 击败所有20个敌人获胜！</p>
         </div>
