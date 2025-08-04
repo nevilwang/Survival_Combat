@@ -775,19 +775,9 @@ const Game: React.FC = () => {
         </div>
         
         {/* Virtual Buttons for mobile */}
-        <div className="flex justify-center mt-4">
-          <VirtualButtons onDirectionPress={handleDirectionPress} />
-        </div>
-        
-        {/* Debug info */}
-        <div className="mt-2 text-xs text-gray-500 text-center">
-          移动设备检测: {isMobile ? '是' : '否'} | 屏幕宽度: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}
-        </div>
-        
-        {/* Conditional mobile buttons (backup) */}
         {isMobile && (
           <div className="flex justify-center mt-4">
-            <div className="text-white text-sm">移动端按键已启用</div>
+            <VirtualButtons onDirectionPress={handleDirectionPress} />
           </div>
         )}
         
